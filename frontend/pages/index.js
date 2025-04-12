@@ -3,43 +3,7 @@ import SalesTable from "../component/salesTable"
 import ChatAi from "../component/chatAi"
 
 export default function Home() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingChat, setLoadingChat] = useState(false);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
   const [activeTab, setActiveTab] = useState("tab1");
-
-  useEffect(() => {
-    fetch("http://localhost:8000/api/data")
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.salesReps || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch data:", err);
-        setLoading(false);
-      });
-  }, []);
-
-  const handleAskQuestion = async () => {
-    try {
-      setLoadingChat(true);
-      const response = await fetch("http://localhost:8000/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
-      const data = await response.json();
-      console.log('data.answer', data.answer);
-      setAnswer(data);
-      setLoadingChat(false);
-    } catch (error) {
-      setLoadingChat(false);
-      console.error("Error in AI request:", error);
-    }
-  };
 
   return (
     <div style={{ padding: "2rem" }}>

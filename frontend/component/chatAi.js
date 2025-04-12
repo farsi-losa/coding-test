@@ -25,8 +25,8 @@ export default function ChatAi() {
 
     return (
         <div style={{ padding: "2rem" }}>
+            <h2 className="text-3xl pb-5">Ask a Question</h2>
             <div>
-                <label htmlFor="small-input" className="block mb-2 text-sm font-medium text-gray-900 ">Ask a Question (AI Endpoint)</label>
                 <div className="relative w-3xs">
                     <input
                         type="text"

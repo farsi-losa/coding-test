@@ -3,23 +3,42 @@ import { useState, useEffect } from "react";
 export default function SalesTable() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetch("http://localhost:8000/api/data")
-            .then((res) => res.json())
-            .then((data) => {
-                setUsers(data.salesReps || []);
+        async function fetchData() {
+            try {
+                const response = await fetch("http://localhost:8000/api/data");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                setUsers(result.salesReps || []);
+            } catch (err) {
+                setError(err.message);
+            } finally {
                 setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Failed to fetch data:", err);
-                setLoading(false);
-            });
+            }
+        };
+        fetchData();
     }, []);
+
+    const errorNotif = <div className="flex items-center p-4 mt-5 mb-4 w-3xl m-auto text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+        <svg className="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+        </svg>
+        <span className="sr-only">Info</span>
+        <div>
+            <span className="font-medium">Alert!</span> {error}
+        </div>
+    </div>
+    ;
 
     return (
         <div>
             <h2 className="text-3xl pb-5">Sales Representative</h2>
+            
             {loading ? (
                 <div className="flex items-center justify-center w-full h-56">
                     <div className="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">loading...</div>
@@ -53,6 +72,7 @@ export default function SalesTable() {
                     </table>
                 </div>
             )}
+            {error && errorNotif}
         </div>
     );
 }
