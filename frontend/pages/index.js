@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
+import SalesTable from "../component/salesTable"
+import ChatAi from "../component/chatAi"
 
 export default function Home() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingChat, setLoadingChat] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [activeTab, setActiveTab] = useState("tab1");
 
   useEffect(() => {
     fetch("http://localhost:8000/api/data")
       .then((res) => res.json())
       .then((data) => {
-        setUsers(data.users || []);
+        setUsers(data.salesReps || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -21,54 +25,46 @@ export default function Home() {
 
   const handleAskQuestion = async () => {
     try {
+      setLoadingChat(true);
       const response = await fetch("http://localhost:8000/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
       const data = await response.json();
-      setAnswer(data.answer);
+      console.log('data.answer', data.answer);
+      setAnswer(data);
+      setLoadingChat(false);
     } catch (error) {
+      setLoadingChat(false);
       console.error("Error in AI request:", error);
     }
   };
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Next.js + FastAPI Sample</h1>
-
       <section style={{ marginBottom: "2rem" }}>
-        <h2>Dummy Data</h2>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <ul>
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.role}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
+          <ul className="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab" data-tabs-toggle="#default-tab-content" role="tablist">
+            <li className="me-2" role="presentation" onClick={() => setActiveTab("tab1")}>
+              <button className={`${activeTab === 'tab1' ? 'text-blue-600 hover:text-blue-600 dark:text-blue-500' : ''} inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300`} id="profile-tab" data-tabs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Sales Data</button>
+            </li>
+            <li className="me-2" role="presentation" onClick={() => setActiveTab("tab2")}>
+              <button className={`${activeTab === 'tab2' ? 'text-blue-600 hover:text-blue-600 dark:text-blue-500' : ''}inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300`} id="dashboard-tab" data-tabs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="false">Chat AI</button>
+            </li>
 
-      <section>
-        <h2>Ask a Question (AI Endpoint)</h2>
-        <div>
-          <input
-            type="text"
-            placeholder="Enter your question..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <button onClick={handleAskQuestion}>Ask</button>
+          </ul>
         </div>
-        {answer && (
-          <div style={{ marginTop: "1rem" }}>
-            <strong>AI Response:</strong> {answer}
+        <div id="default-tab-content">
+          <div className={`${activeTab === 'tab1' ? '' : 'hidden'}  p-4 `} id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <SalesTable/>
           </div>
-        )}
+          <div className={`${activeTab === 'tab2' ? '' : 'hidden'} p-4 `} id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+            <ChatAi/>
+          </div>
+        </div>
       </section>
+      
     </div>
   );
 }
